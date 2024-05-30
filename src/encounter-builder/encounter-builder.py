@@ -2,6 +2,7 @@ import pandas as pd
 from pathlib import Path
 from argparse import ArgumentParser
 from pprint import pprint
+from encounter import Encounter
 
 def read_args():
     parser = ArgumentParser(
@@ -15,10 +16,12 @@ def read_args():
     return parser.parse_args()
 
 def cr_to_int(cr):
+    if not isinstance(cr, str):
+        return cr
     if "/" in cr:
         a, b = cr.split("/")
         return int(a)/int(b)
-    return cr
+    return int(cr)
 
 def filter_by_cr(df):
     """
@@ -47,24 +50,33 @@ def load_monsters(path):
     df["CR"] = df["Challenge Rating"].apply(lambda cr: cr_to_int(cr))
     return filter_by_cr(df)
 
-def list_encounters_for_budget(data, cr_budget, possible):
+def list_encounters_for_budget(data, cr_budget, max_size):
     """
     Given a CR budget, list all possible encounters that meet that budget using the monsters in data
     """
-    result = []
-    for encounter in possible:
+    incomplete = [Encounter()]
+    complete = []
+    while incomplete:
+        curr = incomplete.pop(0)
         for index, row in data.iterrows():
-            cost = row["Challenge Rating"]
-            if cost > cr_budget:
+            if curr.total + row["CR"] > cr_budget:
                 continue
-            new = possible.copy()
-            new[index] = new.get(index, 0) + 1
-            result.extend(list_encounters_for_budget(data, cr_budget - cost, new))
-    return result
+            new = curr.copy()
+            new.add_monster(row["Creature Name"], row["CR"])
+            if new.total == cr_budget:
+                monsters = new.freeze()
+                if monsters not in complete:
+                    complete.append(monsters)
+            else:
+                incomplete.append(new)
+    return complete
+
 
 if __name__=="__main__":
     args = read_args()
     data = load_monsters(args.filepath)
     data = filter_by_entry(data, args.monster_type)
-    encounters = list_encounters_for_budget(data, 5, [{}])
+    encounters = list_encounters_for_budget(data, 1, 2*args.party_size)
+    for encounter in encounters:
+        print(encounter)
     
