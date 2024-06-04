@@ -10,7 +10,7 @@ def read_args():
         description="List possible encounters for DND 5e combat based on some inputs",
     )
     parser.add_argument("-f", dest="filepath", default="resources/encounter-builder", help="path to monster csv files")
-    parser.add_argument("-n", dest="party_size", required=True, help="number of party members")
+    parser.add_argument("-n", dest="party_size", type=int, required=True, help="number of party members")
     parser.add_argument("-v", dest="party_level", required=True, help="mean level of party")
     parser.add_argument("-t", dest="monster_type", help="type of monster to user for encounter")
     return parser.parse_args()
@@ -56,27 +56,21 @@ def list_encounters_for_budget(data, cr_budget, max_size):
     """
     incomplete = [Encounter()]
     complete = []
-    while incomplete:
-        curr = incomplete.pop(0)
-        for index, row in data.iterrows():
-            if curr.total + row["CR"] > cr_budget:
-                continue
-            new = curr.copy()
+    data = data.sort_values(by=("CR"))
+    for index, row in data.iterrows():
+        for enc in incomplete:
+            new = enc.copy()
             new.add_monster(row["Creature Name"], row["CR"])
-            if new.total == cr_budget:
-                monsters = new.freeze()
-                if monsters not in complete:
-                    complete.append(monsters)
-            else:
+            if new.is_valid(cr_budget, max_size):
+                complete.append(new)
+            elif new.is_incomplete(cr_budget, max_size):
                 incomplete.append(new)
     return complete
-
 
 if __name__=="__main__":
     args = read_args()
     data = load_monsters(args.filepath)
     data = filter_by_entry(data, args.monster_type)
-    encounters = list_encounters_for_budget(data, 1, 2*args.party_size)
+    encounters = list_encounters_for_budget(data, 8, 2*args.party_size)
     for encounter in encounters:
-        print(encounter)
-    
+        encounter.print()
