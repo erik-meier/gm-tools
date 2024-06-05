@@ -2,7 +2,7 @@ import pandas as pd
 from pathlib import Path
 from argparse import ArgumentParser
 from pprint import pprint
-from encounter import Encounter, Difficulty
+from encounter import Encounter, Difficulty, CR_PER_CHARACTER
 from monster import Monster
 
 def read_args():
@@ -12,7 +12,7 @@ def read_args():
     )
     parser.add_argument("-f", dest="filepath", default="resources/encounter-builder", help="path to monster csv files")
     parser.add_argument("-n", dest="party_size", type=int, required=True, help="number of party members")
-    parser.add_argument("-v", dest="party_level", required=True, help="mean level of party")
+    parser.add_argument("-v", dest="avg_level", type=int, required=True, help="mean level of party")
     parser.add_argument("-d", dest="difficulty", type=str, help="encounter difficulty")
     parser.add_argument("-t", dest="monster_type", help="type of monster to user for encounter")
     args = parser.parse_args()
@@ -20,6 +20,9 @@ def read_args():
     return args
 
 def parse_difficulty(diff_str):
+    if not isinstance(diff_str, str):
+        return Difficulty.STANDARD
+    
     diff_str = diff_str.lower()
     if diff_str == "trivial":
         return Difficulty.TRIVIAL
@@ -70,12 +73,17 @@ def load_monsters(path, type):
     df = filter_by_entry(df, type)
     return df.apply(create_monster_from_row, axis=1)
 
-def list_encounters_for_budget(data, cr_budget, max_size):
+def calculate_cr_budget(difficulty, avg_level, party_size):
+    return CR_PER_CHARACTER[difficulty][avg_level-1]*party_size
+
+
+def list_encounters_for_budget(monsters, cr_budget, max_size):
     """
     Given a CR budget, list all possible encounters that meet that budget using the monsters in data
     """
     incomplete = [Encounter()]
     complete = []
+    monsters = monsters[monsters.apply(lambda m: m.role != "Solo")]
     monsters.sort_values()
     for m in monsters:
         for enc in incomplete:
@@ -90,6 +98,9 @@ def list_encounters_for_budget(data, cr_budget, max_size):
 if __name__=="__main__":
     args = read_args()
     monsters = load_monsters(args.filepath, args.monster_type)
-    encounters = list_encounters_for_budget(monsters, 1, 2*args.party_size)
+    encounters = []
+    if args.difficulty != Difficulty.TRIVIAL:
+        budget = calculate_cr_budget(args.difficulty, args.avg_level, args.party_size)
+        encounters += list_encounters_for_budget(monsters, budget, 2*args.party_size)
     for encounter in encounters:
         encounter.print()
