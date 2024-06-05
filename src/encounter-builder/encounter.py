@@ -8,9 +8,9 @@ class Encounter:
     def copy(self):
         return Encounter(self.total, self.size, self.monsters.copy())
 
-    def add_monster(self, m, cr):
+    def add_monster(self, m):
         self.monsters[m] = self.monsters.get(m, 0) + 1
-        self.total += cr
+        self.total += m.cr
         self.size += 1
 
     def is_incomplete(self, budget, max_size):
@@ -20,4 +20,4 @@ class Encounter:
         return self.total == budget and self.size <= max_size
 
     def print(self):
-        print(", ". join(f"{n} {m}" for m, n in self.monsters.items()))
+        print(", ". join(f"{n} {m.name}" for m, n in self.monsters.items()))

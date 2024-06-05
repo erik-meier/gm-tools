@@ -3,6 +3,7 @@ from pathlib import Path
 from argparse import ArgumentParser
 from pprint import pprint
 from encounter import Encounter
+from monster import Monster
 
 def read_args():
     parser = ArgumentParser(
@@ -38,7 +39,10 @@ def filter_by_entry(df, group):
         return df
     return df[df["Entry"] == group]
 
-def load_monsters(path):
+def create_monster_from_row(row):
+    return Monster(row["Creature Name"], cr_to_int(row["Challenge Rating"]), row["Role"])
+
+def load_monsters(path, type):
     """
     Reads all CSV files from resources directory to compile monsters list.
     """
@@ -47,8 +51,9 @@ def load_monsters(path):
     if not files:
         return None
     df = pd.concat(pd.read_csv(file) for file in files)
-    df["CR"] = df["Challenge Rating"].apply(lambda cr: cr_to_int(cr))
-    return filter_by_cr(df)
+    df = filter_by_cr(df)
+    df = filter_by_entry(df, type)
+    return df.apply(create_monster_from_row, axis=1)
 
 def list_encounters_for_budget(data, cr_budget, max_size):
     """
@@ -56,11 +61,11 @@ def list_encounters_for_budget(data, cr_budget, max_size):
     """
     incomplete = [Encounter()]
     complete = []
-    data = data.sort_values(by=("CR"))
-    for index, row in data.iterrows():
+    monsters.sort_values()
+    for m in monsters:
         for enc in incomplete:
             new = enc.copy()
-            new.add_monster(row["Creature Name"], row["CR"])
+            new.add_monster(m)
             if new.is_valid(cr_budget, max_size):
                 complete.append(new)
             elif new.is_incomplete(cr_budget, max_size):
@@ -69,8 +74,7 @@ def list_encounters_for_budget(data, cr_budget, max_size):
 
 if __name__=="__main__":
     args = read_args()
-    data = load_monsters(args.filepath)
-    data = filter_by_entry(data, args.monster_type)
-    encounters = list_encounters_for_budget(data, 8, 2*args.party_size)
+    monsters = load_monsters(args.filepath, args.monster_type)
+    encounters = list_encounters_for_budget(monsters, 1, 2*args.party_size)
     for encounter in encounters:
         encounter.print()
