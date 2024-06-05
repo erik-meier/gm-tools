@@ -87,6 +87,8 @@ def list_encounters_for_budget(monsters, cr_budget, max_size):
     monsters.sort_values()
     for m in monsters:
         for enc in incomplete:
+            if enc.has_leader() and m.role == "Leader":
+                continue
             new = enc.copy()
             new.add_monster(m)
             if new.is_valid(cr_budget, max_size):

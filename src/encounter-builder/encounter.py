@@ -94,6 +94,9 @@ class Encounter:
 
     def is_valid(self, budget, max_size):
         return self.total == budget and self.size <= max_size
+    
+    def has_leader(self):
+        return any(m.role == "Leader" for m in self.monsters)
 
     def print(self):
         print(", ". join(f"{n} {m.name}" for m, n in self.monsters.items()))
