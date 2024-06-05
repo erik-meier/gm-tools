@@ -1,9 +1,16 @@
+from enum import Enum
+
+class Difficulty(Enum):
+    TRIVIAL = 1
+    EASY = 2
+    STANDARD = 3
+    HARD = 4
+
 class Encounter:
     def __init__(self, total=0, size=0, monsters={}):
         self.total = total
         self.size = size
         self.monsters = monsters
-
 
     def copy(self):
         return Encounter(self.total, self.size, self.monsters.copy())

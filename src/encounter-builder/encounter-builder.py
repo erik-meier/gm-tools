@@ -2,7 +2,7 @@ import pandas as pd
 from pathlib import Path
 from argparse import ArgumentParser
 from pprint import pprint
-from encounter import Encounter
+from encounter import Encounter, Difficulty
 from monster import Monster
 
 def read_args():
@@ -13,8 +13,23 @@ def read_args():
     parser.add_argument("-f", dest="filepath", default="resources/encounter-builder", help="path to monster csv files")
     parser.add_argument("-n", dest="party_size", type=int, required=True, help="number of party members")
     parser.add_argument("-v", dest="party_level", required=True, help="mean level of party")
+    parser.add_argument("-d", dest="difficulty", type=str, help="encounter difficulty")
     parser.add_argument("-t", dest="monster_type", help="type of monster to user for encounter")
-    return parser.parse_args()
+    args = parser.parse_args()
+    args.difficulty = parse_difficulty(args.difficulty)
+    return args
+
+def parse_difficulty(diff_str):
+    diff_str = diff_str.lower()
+    if diff_str == "trivial":
+        return Difficulty.TRIVIAL
+    elif diff_str == "easy":
+        return Difficulty.EASY
+    elif diff_str == "hard":
+        return Difficulty.HARD
+    else:
+        return Difficulty.STANDARD
+
 
 def cr_to_int(cr):
     if not isinstance(cr, str):
