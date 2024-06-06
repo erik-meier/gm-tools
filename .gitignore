@@ -1,2 +1,4 @@
 *.csv
 .secrets/*
+*.txt
+*.pyc
