@@ -12,6 +12,12 @@ class Encounter:
         self.size = size
         self.monsters = monsters
 
+    @staticmethod
+    def create_solo(m):
+        new = Encounter()
+        new.add_monster(m)
+        return new
+
     def copy(self):
         return Encounter(self.total, self.size, self.monsters.copy())
 
@@ -30,4 +36,6 @@ class Encounter:
         return any(m.role == "Leader" for m in self.monsters)
 
     def print(self):
+        if self.monsters is None:
+            return
         print(", ". join(f"{n} {m.name}" for m, n in self.monsters.items()))

@@ -1,3 +1,5 @@
+from encounter import Difficulty
+
 CR_PER_CHARACTER = {
         Difficulty.EASY: [
             0.125,
@@ -67,7 +69,7 @@ CR_PER_CHARACTER = {
         ]
     }
 
-    CAP_PER_LEVEL = [
+CAP_PER_LEVEL = [
         1,
         3,
         4,
@@ -90,29 +92,29 @@ CR_PER_CHARACTER = {
         30
     ]
 
-    CAP_FOR_DIFFICULTY = {
-        4: {
-            Difficulty.TRIVIAL: "30,7",
-            Difficulty.EASY: "6,5",
-            Difficulty.STANDARD: "4,3",
-            Difficulty.HARD: "2,0"
-        },
-        5: {
-            Difficulty.TRIVIAL: "30,7",
-            Difficulty.EASY: "6,5",
-            Difficulty.STANDARD: "4,3",
-            Difficulty.HARD: "2,0"
-        },
-        6: {
-            Difficulty.TRIVIAL: "30,6",
-            Difficulty.EASY: "5,4",
-            Difficulty.STANDARD: "3,2",
-            Difficulty.HARD: "1,0" 
-        },
-        7: {
-            Difficulty.TRIVIAL: "30,6",
-            Difficulty.EASY: "5,4",
-            Difficulty.STANDARD: "3,2",
-            Difficulty.HARD: "1,0" 
-        }
+CAP_FOR_DIFFICULTY = {
+    4: {
+        Difficulty.TRIVIAL: "30,7",
+        Difficulty.EASY: "6,5",
+        Difficulty.STANDARD: "4,3",
+        Difficulty.HARD: "2,0"
+    },
+    5: {
+        Difficulty.TRIVIAL: "30,7",
+        Difficulty.EASY: "6,5",
+        Difficulty.STANDARD: "4,3",
+        Difficulty.HARD: "2,0"
+    },
+    6: {
+        Difficulty.TRIVIAL: "30,6",
+        Difficulty.EASY: "5,4",
+        Difficulty.STANDARD: "3,2",
+        Difficulty.HARD: "1,0" 
+    },
+    7: {
+        Difficulty.TRIVIAL: "30,6",
+        Difficulty.EASY: "5,4",
+        Difficulty.STANDARD: "3,2",
+        Difficulty.HARD: "1,0" 
     }
+}

@@ -17,6 +17,7 @@ def read_args():
     parser.add_argument("-d", dest="difficulty", type=str, help="encounter difficulty")
     parser.add_argument("-t", dest="monster_type", help="type of monster to user for encounter")
     args = parser.parse_args()
+    # TODO add validation
     args.difficulty = parse_difficulty(args.difficulty)
     return args
 
@@ -75,7 +76,7 @@ def load_monsters(path, type):
     return df.apply(create_monster_from_row, axis=1)
 
 def calculate_cr_budget(difficulty, avg_level, party_size):
-    return CR_PER_CHARACTER[difficulty][avg_level-1]*party_size
+    return index.CR_PER_CHARACTER[difficulty][avg_level-1]*party_size
 
 
 def list_encounters_for_budget(monsters, cr_budget, max_size):
@@ -98,10 +99,24 @@ def list_encounters_for_budget(monsters, cr_budget, max_size):
                 incomplete.append(new)
     return complete
 
+def calculate_solo_cr_range(difficulty, level, party_size):
+    cap = index.CAP_PER_LEVEL[level-1]
+    max_dec, min_dec = map(int, index.CAP_FOR_DIFFICULTY[party_size][difficulty].split(","))
+    return cap - max_dec, cap - min_dec
+
+def is_valid_solo_monster(m, min_cr, max_cr):
+    return m.role == "Solo" and min_cr <= m.cr <= max_cr
+
+def list_solo_encounters(monsters, difficulty, level, party_size):
+    min_cr, max_cr = calculate_solo_cr_range(difficulty, level, party_size)
+    encounters = [Encounter.create_solo(m) for m in monsters if is_valid_solo_monster(m, min_cr, max_cr)]
+    return encounters
+
+
 if __name__=="__main__":
     args = read_args()
     monsters = load_monsters(args.filepath, args.monster_type)
-    encounters = []
+    encounters = list_solo_encounters(monsters, args.difficulty, args.avg_level, args.party_size)
     if args.difficulty != Difficulty.TRIVIAL:
         budget = calculate_cr_budget(args.difficulty, args.avg_level, args.party_size)
         encounters += list_encounters_for_budget(monsters, budget, 2*args.party_size)
