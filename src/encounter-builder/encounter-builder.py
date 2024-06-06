@@ -2,8 +2,9 @@ import pandas as pd
 from pathlib import Path
 from argparse import ArgumentParser
 from pprint import pprint
-from encounter import Encounter, Difficulty, CR_PER_CHARACTER
+from encounter import Encounter, Difficulty
 from monster import Monster
+import index
 
 def read_args():
     parser = ArgumentParser(
